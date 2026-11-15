@@ -1,0 +1,66 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "events-timeline/timeline",
+	"version": "1.0.0",
+	"title": "Events Timeline",
+	"category": "widgets",
+	"icon": "calendar-alt",
+	"description": "Upcoming or past events on a timeline, with filters by event type.",
+	"keywords": [ "events", "calendar", "schedule", "timeline" ],
+	"textdomain": "events-timeline",
+	"attributes": {
+		"show": {
+			"type": "string",
+			"enum": [ "upcoming", "past", "all" ],
+			"default": "upcoming"
+		},
+		"eventTypes": {
+			"type": "array",
+			"items": { "type": "string" },
+			"default": []
+		},
+		"limit": {
+			"type": "integer",
+			"default": 10
+		},
+		"layout": {
+			"type": "string",
+			"enum": [ "vertical", "horizontal" ],
+			"default": "vertical"
+		},
+		"showFilters": {
+			"type": "boolean",
+			"default": true
+		},
+		"showLocation": {
+			"type": "boolean",
+			"default": true
+		},
+		"showExcerpt": {
+			"type": "boolean",
+			"default": true
+		},
+		"headingLevel": {
+			"type": "integer",
+			"enum": [ 2, 3, 4 ],
+			"default": 3
+		}
+	},
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ],
+		"color": { "text": true, "background": true, "link": true },
+		"spacing": { "margin": true, "padding": true },
+		"typography": { "fontSize": true },
+		"interactivity": true
+	},
+	"example": {
+		"attributes": { "layout": "vertical", "limit": 3 }
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"viewScriptModule": "file:./view.js",
+	"render": "file:./render.php"
+}

@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Lint, build and end-to-end tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, sqlite3, gd
+          tools: none
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint:js
+      - run: npm run lint:css
+
+      - name: PHP syntax check
+        run: find events-timeline.php includes src bin -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - run: npm run build
+
+      - name: WordPress test site with the plugin and demo events
+        run: |
+          npm run site:setup
+          npm run site:start
+
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+
+      - name: Installable plugin zip
+        run: npm run plugin-zip
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: events-timeline-plugin
+          path: events-timeline.zip
+
+      - uses: actions/upload-artifact@v5
+        if: failure()
+        with:
+          name: playwright-artifacts
+          path: artifacts/
+          retention-days: 7

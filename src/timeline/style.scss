@@ -1,0 +1,227 @@
+// Front end and editor styles for the Events Timeline block.
+// Colors come from the theme's presets where it has them, so the block fits in.
+
+$b: ".wp-block-events-timeline-timeline";
+$break: 782px;
+
+@mixin vertical-timeline {
+	#{$b}__list {
+		padding-inline-start: 1.75rem;
+
+		&::before {
+			content: "";
+			position: absolute;
+			inset-block: 0.5rem 0;
+			inset-inline-start: 0.4375rem;
+			width: 2px;
+			background: var(--evtl-line);
+		}
+	}
+
+	#{$b}__item {
+		padding-block-end: var(--evtl-gap);
+
+		&::before {
+			inset-inline-start: -1.75rem;
+			inset-block-start: 0.2rem;
+		}
+
+		&:last-child {
+			padding-block-end: 0;
+		}
+	}
+}
+
+#{$b} {
+	--evtl-gap: 1.5rem;
+	--evtl-line: color-mix(in srgb, currentcolor 30%, transparent);
+	--evtl-strong: var(--wp--preset--color--contrast, #1e1e1e);
+	--evtl-on-strong: var(--wp--preset--color--base, #fff);
+
+	&__filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-block-end: 0.75rem;
+	}
+
+	&__filter {
+		min-height: 2.25rem;
+		padding: 0.35em 1em;
+		border: 1px solid currentcolor;
+		border-radius: 999px;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		font-size: 0.875em;
+		line-height: 1.2;
+		cursor: pointer;
+
+		&:hover {
+			background: color-mix(in srgb, currentcolor 10%, transparent);
+		}
+
+		&[aria-pressed="true"] {
+			border-color: var(--evtl-strong);
+			background: var(--evtl-strong);
+			color: var(--evtl-on-strong);
+		}
+
+		&:focus-visible {
+			outline: 2px solid currentcolor;
+			outline-offset: 2px;
+		}
+	}
+
+	&__status {
+		margin: 0 0 1rem;
+		font-size: 0.875em;
+	}
+
+	&__list {
+		position: relative;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__item {
+		position: relative;
+
+		// The dot on the timeline.
+		&::before {
+			content: "";
+			position: absolute;
+			z-index: 1; // Above the line.
+			box-sizing: border-box;
+			width: 1rem;
+			height: 1rem;
+			border: 2px solid currentcolor;
+			border-radius: 50%;
+			background: var(--wp--preset--color--base, #fff);
+		}
+
+		&.is-happening-now::before {
+			background: currentcolor;
+		}
+
+		&[hidden] {
+			display: none !important;
+		}
+	}
+
+	&__card > :first-child {
+		margin-block-start: 0;
+	}
+
+	&__date {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+		margin: 0 0 0.25rem;
+		font-size: 0.875em;
+		font-weight: 600;
+	}
+
+	&__live {
+		padding: 0.15em 0.6em;
+		border-radius: 999px;
+		background: var(--evtl-strong);
+		color: var(--evtl-on-strong);
+		font-size: 0.8em;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	&__title {
+		margin: 0 0 0.25rem;
+		font-size: 1.125em;
+		line-height: 1.3;
+	}
+
+	&__location,
+	&__excerpt {
+		margin: 0.25rem 0;
+		font-size: 0.9375em;
+	}
+
+	&__types {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.375rem;
+		margin: 0.5rem 0 0;
+		padding: 0;
+		list-style: none;
+
+		li {
+			padding: 0.1em 0.6em;
+			border: 1px solid var(--evtl-line);
+			border-radius: 999px;
+			font-size: 0.75em;
+		}
+	}
+
+	&__empty {
+		margin: 0;
+	}
+
+	&.is-layout-vertical {
+
+		@include vertical-timeline;
+	}
+
+	// Horizontal timelines become a vertical list on small screens.
+	@media (max-width: #{$break - 1px}) {
+
+		&.is-layout-horizontal {
+
+			@include vertical-timeline;
+		}
+	}
+
+	@media (min-width: $break) {
+
+		&.is-layout-horizontal {
+			#{$b}__list {
+				display: grid;
+				grid-auto-columns: minmax(15rem, 1fr);
+				grid-auto-flow: column;
+				gap: var(--evtl-gap);
+				overflow-x: auto;
+				padding-block: 0.25rem 1rem;
+				scroll-snap-type: x proximity;
+				overscroll-behavior-x: contain;
+
+				&:focus-visible {
+					outline: 2px solid currentcolor;
+					outline-offset: 4px;
+				}
+			}
+
+			#{$b}__item {
+				padding-block-start: 1.75rem;
+				scroll-snap-align: start;
+
+				&::before {
+					inset-block-start: 0;
+					inset-inline-start: 0;
+				}
+
+				// The line, drawn per item so it spans the full scroll width.
+				&::after {
+					content: "";
+					position: absolute;
+					inset-block-start: calc(0.5rem - 1px);
+					inset-inline: 0 calc(-1 * var(--evtl-gap));
+					height: 2px;
+					background: var(--evtl-line);
+				}
+
+				&:last-of-type::after {
+					inset-inline-end: 0;
+				}
+			}
+		}
+	}
+}

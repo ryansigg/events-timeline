@@ -1,0 +1,9 @@
+// The editor shows a server-rendered preview. Keep its links and filter buttons
+// from navigating or stealing clicks; selecting the block is what matters here.
+.evtl-editor-preview {
+
+	a,
+	button {
+		pointer-events: none;
+	}
+}
