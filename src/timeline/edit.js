@@ -14,11 +14,78 @@ import { store as coreStore } from '@wordpress/core-data';
 import ServerSideRender from '@wordpress/server-side-render';
 
 const TAXONOMY = 'evtl_event_type';
+const CALENDARS = 'evtl_calendar';
+
+function useTerms( taxonomy ) {
+	return useSelect(
+		( select ) => {
+			const query = {
+				per_page: 100,
+				hide_empty: false,
+				_fields: 'id,slug,name',
+			};
+			return {
+				terms: select( coreStore ).getEntityRecords(
+					'taxonomy',
+					taxonomy,
+					query
+				),
+				isLoading: ! select( coreStore ).hasFinishedResolution(
+					'getEntityRecords',
+					[ 'taxonomy', taxonomy, query ]
+				),
+			};
+		},
+		[ taxonomy ]
+	);
+}
+
+function TermChecklist( {
+	id,
+	label,
+	help,
+	empty,
+	taxonomy,
+	value,
+	onChange,
+} ) {
+	const { terms, isLoading } = useTerms( taxonomy );
+	return (
+		<BaseControl
+			__nextHasNoMarginBottom
+			id={ id }
+			label={ label }
+			help={ help }
+		>
+			{ isLoading && <Spinner /> }
+			{ ! isLoading && ! terms?.length && <p>{ empty }</p> }
+			{ terms?.map( ( term ) => (
+				<CheckboxControl
+					__nextHasNoMarginBottom
+					key={ term.id }
+					label={ term.name }
+					checked={ value.includes( term.slug ) }
+					onChange={ ( checked ) =>
+						onChange(
+							checked
+								? [ ...value, term.slug ]
+								: value.filter( ( s ) => s !== term.slug )
+						)
+					}
+				/>
+			) ) }
+		</BaseControl>
+	);
+}
 
 export default function Edit( { attributes, setAttributes, name } ) {
 	const {
 		show,
+		defaultView,
+		range,
+		showViewToggle,
 		eventTypes,
+		calendars,
 		limit,
 		layout,
 		showFilters,
@@ -26,32 +93,6 @@ export default function Edit( { attributes, setAttributes, name } ) {
 		showExcerpt,
 		headingLevel,
 	} = attributes;
-
-	const { terms, isLoading } = useSelect( ( select ) => {
-		const query = {
-			per_page: 100,
-			hide_empty: false,
-			_fields: 'id,slug,name',
-		};
-		return {
-			terms: select( coreStore ).getEntityRecords(
-				'taxonomy',
-				TAXONOMY,
-				query
-			),
-			isLoading: ! select( coreStore ).hasFinishedResolution(
-				'getEntityRecords',
-				[ 'taxonomy', TAXONOMY, query ]
-			),
-		};
-	}, [] );
-
-	const toggleType = ( slug, checked ) =>
-		setAttributes( {
-			eventTypes: checked
-				? [ ...eventTypes, slug ]
-				: eventTypes.filter( ( s ) => s !== slug ),
-		} );
 
 	return (
 		<>
@@ -92,50 +133,105 @@ export default function Edit( { attributes, setAttributes, name } ) {
 						) }
 						value={ limit }
 						min={ 1 }
-						max={ 50 }
+						max={ 100 }
 						onChange={ ( value ) =>
-							setAttributes( { limit: value ?? 10 } )
+							setAttributes( { limit: value ?? 50 } )
 						}
 					/>
-					<BaseControl
-						__nextHasNoMarginBottom
+					<TermChecklist
+						id="evtl-calendars"
+						label={ __( 'Calendars', 'events-timeline' ) }
+						help={ __(
+							'Leave all unchecked to include every calendar.',
+							'events-timeline'
+						) }
+						empty={ __( 'No calendars yet.', 'events-timeline' ) }
+						taxonomy={ CALENDARS }
+						value={ calendars }
+						onChange={ ( value ) =>
+							setAttributes( { calendars: value } )
+						}
+					/>
+					<TermChecklist
 						id="evtl-event-types"
 						label={ __( 'Event types', 'events-timeline' ) }
 						help={ __(
 							'Leave all unchecked to include every type.',
 							'events-timeline'
 						) }
-					>
-						{ isLoading && <Spinner /> }
-						{ ! isLoading && ! terms?.length && (
-							<p>
-								{ __(
-									'No event types yet.',
-									'events-timeline'
-								) }
-							</p>
-						) }
-						{ terms?.map( ( term ) => (
-							<CheckboxControl
-								__nextHasNoMarginBottom
-								key={ term.id }
-								label={ term.name }
-								checked={ eventTypes.includes( term.slug ) }
-								onChange={ ( checked ) =>
-									toggleType( term.slug, checked )
-								}
-							/>
-						) ) }
-					</BaseControl>
+						empty={ __( 'No event types yet.', 'events-timeline' ) }
+						taxonomy={ TAXONOMY }
+						value={ eventTypes }
+						onChange={ ( value ) =>
+							setAttributes( { eventTypes: value } )
+						}
+					/>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Display', 'events-timeline' ) }>
+				<PanelBody title={ __( 'Views', 'events-timeline' ) }>
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
-						label={ __( 'Layout', 'events-timeline' ) }
+						label={ __( 'Opens in', 'events-timeline' ) }
 						help={ __(
-							'Horizontal timelines switch to a vertical list on small screens.',
+							'On phones the block opens in the list unless a link asks for the timeline.',
+							'events-timeline'
+						) }
+						value={ defaultView }
+						options={ [
+							{
+								label: __( 'Timeline', 'events-timeline' ),
+								value: 'timeline',
+							},
+							{
+								label: __( 'List', 'events-timeline' ),
+								value: 'list',
+							},
+						] }
+						onChange={ ( value ) =>
+							setAttributes( { defaultView: value } )
+						}
+					/>
+					<SelectControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={ __( 'Timeline range', 'events-timeline' ) }
+						value={ range }
+						options={ [
+							{
+								label: __( 'Week', 'events-timeline' ),
+								value: 'week',
+							},
+							{
+								label: __( 'Month', 'events-timeline' ),
+								value: 'month',
+							},
+							{
+								label: __( 'Year', 'events-timeline' ),
+								value: 'year',
+							},
+						] }
+						onChange={ ( value ) =>
+							setAttributes( { range: value } )
+						}
+					/>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={ __(
+							'Show Timeline/List switch',
+							'events-timeline'
+						) }
+						checked={ showViewToggle }
+						onChange={ ( value ) =>
+							setAttributes( { showViewToggle: value } )
+						}
+					/>
+					<SelectControl
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+						label={ __( 'List layout', 'events-timeline' ) }
+						help={ __(
+							'Horizontal lists switch to vertical on small screens.',
 							'events-timeline'
 						) }
 						value={ layout }
@@ -153,6 +249,9 @@ export default function Edit( { attributes, setAttributes, name } ) {
 							setAttributes( { layout: value } )
 						}
 					/>
+				</PanelBody>
+
+				<PanelBody title={ __( 'Display', 'events-timeline' ) }>
 					<SelectControl
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
@@ -175,9 +274,12 @@ export default function Edit( { attributes, setAttributes, name } ) {
 					/>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'Show type filters', 'events-timeline' ) }
+						label={ __(
+							'Show calendar and type filters',
+							'events-timeline'
+						) }
 						help={ __(
-							'Shown when the timeline has more than one event type.',
+							'Each set of filters appears when there is more than one choice.',
 							'events-timeline'
 						) }
 						checked={ showFilters }

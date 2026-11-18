@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 const EVTL_POST_TYPE = 'evtl_event';
 const EVTL_TAXONOMY  = 'evtl_event_type';
+const EVTL_CALENDAR  = 'evtl_calendar';
 
 /**
  * Event fields, all exposed to the REST API so the editor can read and write them.
@@ -33,6 +34,12 @@ function evtl_meta_fields() {
 		'evtl_url'      => array(
 			'description'       => __( 'Optional link for tickets, registration or a stream.', 'events-timeline' ),
 			'sanitize_callback' => 'esc_url_raw',
+		),
+		'evtl_all_day'  => array(
+			'type'              => 'boolean',
+			'default'           => false,
+			'description'       => __( 'All-day event: show dates only, and span whole days on the timeline.', 'events-timeline' ),
+			'sanitize_callback' => 'rest_sanitize_boolean',
 		),
 	);
 }
@@ -106,6 +113,38 @@ function evtl_register_taxonomy_and_meta() {
 			'rest_base'         => 'event-types',
 			'show_admin_column' => true,
 			'rewrite'           => array( 'slug' => 'event-type' ),
+		)
+	);
+
+	register_taxonomy(
+		EVTL_CALENDAR,
+		EVTL_POST_TYPE,
+		array(
+			'labels'            => array(
+				'name'          => __( 'Calendars', 'events-timeline' ),
+				'singular_name' => __( 'Calendar', 'events-timeline' ),
+				'add_new_item'  => __( 'Add New Calendar', 'events-timeline' ),
+				'edit_item'     => __( 'Edit Calendar', 'events-timeline' ),
+				'search_items'  => __( 'Search Calendars', 'events-timeline' ),
+				'all_items'     => __( 'All Calendars', 'events-timeline' ),
+			),
+			'description'       => __( 'Each calendar is a row on the timeline, in its own color: a team, a venue, a program or a game.', 'events-timeline' ),
+			'hierarchical'      => true,
+			'show_in_rest'      => true,
+			'rest_base'         => 'event-calendars',
+			'show_admin_column' => true,
+			'rewrite'           => array( 'slug' => 'event-calendar' ),
+		)
+	);
+	register_term_meta(
+		EVTL_CALENDAR,
+		'evtl_color',
+		array(
+			'type'              => 'string',
+			'single'            => true,
+			'default'           => '',
+			'show_in_rest'      => true,
+			'sanitize_callback' => 'sanitize_hex_color',
 		)
 	);
 

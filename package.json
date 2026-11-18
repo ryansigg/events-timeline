@@ -1,6 +1,6 @@
 {
   "name": "events-timeline",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "WordPress plugin: an Event post type and an Interactivity API Timeline block with linkable type filters.",
   "scripts": {
     "build": "wp-scripts build --experimental-modules",

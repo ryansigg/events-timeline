@@ -8,7 +8,12 @@ import {
 	PluginDocumentSettingPanel,
 	store as editorStore,
 } from '@wordpress/editor';
-import { Flex, Notice, TextControl } from '@wordpress/components';
+import {
+	Flex,
+	Notice,
+	TextControl,
+	ToggleControl,
+} from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { useEntityProp } from '@wordpress/core-data';
 import { useEffect } from '@wordpress/element';
@@ -63,6 +68,34 @@ function EventDetailsPanel() {
 	const update = ( key ) => ( value ) =>
 		setMeta( { ...meta, [ key ]: value } );
 
+	// All-day events edit dates only, stored as the start and end of those days.
+	const allDay = !! meta?.evtl_all_day;
+	const dateOnly = ( value ) => ( value || '' ).slice( 0, 10 );
+	const setAllDay = ( value ) =>
+		setMeta( {
+			...meta,
+			evtl_all_day: value,
+			...( value && start
+				? { evtl_start: `${ dateOnly( start ) }T00:00` }
+				: {} ),
+			...( value && end
+				? { evtl_end: `${ dateOnly( end ) }T23:59` }
+				: {} ),
+		} );
+	const dateField = ( key, time ) =>
+		allDay
+			? {
+					type: 'date',
+					value: dateOnly( meta?.[ key ] ),
+					onChange: ( value ) =>
+						update( key )( value ? `${ value }T${ time }` : '' ),
+				}
+			: {
+					type: 'datetime-local',
+					value: meta?.[ key ] ?? '',
+					onChange: update( key ),
+				};
+
 	return (
 		<PluginDocumentSettingPanel
 			name="evtl-event-details"
@@ -70,10 +103,20 @@ function EventDetailsPanel() {
 			className="evtl-event-details"
 		>
 			<Flex direction="column" align="stretch" gap={ 4 }>
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={ __( 'All day', 'events-timeline' ) }
+					help={ __(
+						'Show dates only, and fill whole days on the timeline.',
+						'events-timeline'
+					) }
+					checked={ allDay }
+					onChange={ setAllDay }
+				/>
 				<TextControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					type="datetime-local"
+					{ ...dateField( 'evtl_start', '00:00' ) }
 					label={ __( 'Starts', 'events-timeline' ) }
 					help={
 						start
@@ -83,18 +126,14 @@ function EventDetailsPanel() {
 									'events-timeline'
 								)
 					}
-					value={ start }
-					onChange={ update( 'evtl_start' ) }
 				/>
 				<TextControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					type="datetime-local"
+					{ ...dateField( 'evtl_end', '23:59' ) }
 					label={ __( 'Ends', 'events-timeline' ) }
 					help={ __( 'Optional.', 'events-timeline' ) }
-					min={ start || undefined }
-					value={ end }
-					onChange={ update( 'evtl_end' ) }
+					min={ ( allDay ? dateOnly( start ) : start ) || undefined }
 				/>
 				{ endBeforeStart && (
 					<Notice status="warning" isDismissible={ false }>

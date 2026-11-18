@@ -67,3 +67,59 @@ add_action(
 		}
 	}
 );
+
+/*
+ * Calendar color: a color picker on the Calendars add and edit screens.
+ */
+
+add_action(
+	EVTL_CALENDAR . '_add_form_fields',
+	static function () {
+		wp_nonce_field( 'evtl_calendar_color', 'evtl_calendar_color_nonce' );
+		?>
+		<div class="form-field">
+			<label for="evtl-color"><?php esc_html_e( 'Color', 'events-timeline' ); ?></label>
+			<input type="color" id="evtl-color" name="evtl_color" value="#2f6f9f">
+			<p><?php esc_html_e( 'Used for this calendar\'s row and events on the timeline.', 'events-timeline' ); ?></p>
+		</div>
+		<?php
+	}
+);
+
+add_action(
+	EVTL_CALENDAR . '_edit_form_fields',
+	static function ( $term ) {
+		$color = evtl_calendar_color( $term );
+		?>
+		<tr class="form-field">
+			<th scope="row"><label for="evtl-color"><?php esc_html_e( 'Color', 'events-timeline' ); ?></label></th>
+			<td>
+				<?php wp_nonce_field( 'evtl_calendar_color', 'evtl_calendar_color_nonce' ); ?>
+				<input type="color" id="evtl-color" name="evtl_color" value="<?php echo esc_attr( $color ); ?>">
+				<p class="description"><?php esc_html_e( 'Used for this calendar\'s row and events on the timeline.', 'events-timeline' ); ?></p>
+			</td>
+		</tr>
+		<?php
+	}
+);
+
+/**
+ * Save the calendar color from the term screens.
+ *
+ * @param int $term_id Term ID.
+ */
+function evtl_save_calendar_color( $term_id ) {
+	if (
+		! isset( $_POST['evtl_color'], $_POST['evtl_calendar_color_nonce'] )
+		|| ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['evtl_calendar_color_nonce'] ) ), 'evtl_calendar_color' )
+		|| ! current_user_can( 'manage_categories' )
+	) {
+		return;
+	}
+	$color = sanitize_hex_color( wp_unslash( $_POST['evtl_color'] ) );
+	if ( $color ) {
+		update_term_meta( $term_id, 'evtl_color', $color );
+	}
+}
+add_action( 'created_' . EVTL_CALENDAR, 'evtl_save_calendar_color' );
+add_action( 'edited_' . EVTL_CALENDAR, 'evtl_save_calendar_color' );

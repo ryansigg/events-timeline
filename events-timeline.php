@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       Events Timeline
  * Plugin URI:        https://github.com/ryansigg/events-timeline
- * Description:       An Event post type and a Timeline block: upcoming or past events on a horizontal or vertical timeline, with type filters you can link to.
- * Version:           1.0.0
+ * Description:       An Event post type, color-coded Calendars, and a Timeline block: events by week, month or year with one row per calendar, or as a list, with filters you can link to.
+ * Version:           1.1.0
  * Requires at least: 6.7
  * Requires PHP:      7.4
  * Author:            Ryan Sigg
@@ -16,12 +16,13 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'EVTL_VERSION', '1.0.0' );
+define( 'EVTL_VERSION', '1.1.0' );
 define( 'EVTL_FILE', __FILE__ );
 define( 'EVTL_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once EVTL_DIR . 'includes/post-type.php';
 require_once EVTL_DIR . 'includes/query.php';
+require_once EVTL_DIR . 'includes/timeline.php';
 require_once EVTL_DIR . 'includes/admin.php';
 
 /**

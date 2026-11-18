@@ -74,6 +74,47 @@ test.describe( 'Event details panel', () => {
 		} );
 	} );
 
+	test( 'all-day events store whole days', async ( {
+		admin,
+		editor,
+		page,
+	} ) => {
+		await admin.createNewPost( { postType: 'evtl_event' } );
+		await editor.canvas
+			.getByRole( 'textbox', { name: 'Add title' } )
+			.fill( 'Spring Festival' );
+		await editor.openDocumentSettingsSidebar();
+		const panel = page.locator( '.evtl-event-details' );
+
+		await panel.getByLabel( 'All day' ).check();
+		await expect( panel.getByLabel( 'Starts' ) ).toHaveAttribute(
+			'type',
+			'date'
+		);
+		await panel.getByLabel( 'Starts' ).fill( '2027-04-10' );
+		await panel.getByLabel( 'Ends' ).fill( '2027-04-11' );
+
+		createdId = await editor
+			.publishPost()
+			.then( () =>
+				page.evaluate( () =>
+					window.wp.data.select( 'core/editor' ).getCurrentPostId()
+				)
+			);
+		const saved = await page.evaluate(
+			( id ) =>
+				window.wp.apiFetch( {
+					path: `/wp/v2/events/${ id }?context=edit`,
+				} ),
+			createdId
+		);
+		expect( saved.meta ).toMatchObject( {
+			evtl_all_day: true,
+			evtl_start: '2027-04-10T00:00',
+			evtl_end: '2027-04-11T23:59',
+		} );
+	} );
+
 	test( 'only appears on events', async ( { admin, page, editor } ) => {
 		await admin.createNewPost();
 		await editor.openDocumentSettingsSidebar();
@@ -91,9 +132,14 @@ test.describe( 'Timeline block', () => {
 		await editor.insertBlock( { name: 'events-timeline/timeline' } );
 
 		const preview = editor.canvas.locator(
-			'.wp-block-events-timeline-timeline__list'
+			'.wp-block-events-timeline-timeline__grid'
 		);
-		await expect( preview ).toContainText( 'Winter Invitational' );
+		await expect( preview ).toBeVisible();
+		// The editor wraps the server-rendered preview, so take the outer element.
+		const block = editor.canvas
+			.locator( '.wp-block-events-timeline-timeline' )
+			.first();
+		await expect( block ).toContainText( 'Winter Invitational' );
 
 		await editor.openDocumentSettingsSidebar();
 		const settings = page.getByRole( 'region', {
@@ -102,18 +148,27 @@ test.describe( 'Timeline block', () => {
 		await settings
 			.getByRole( 'combobox', { name: 'Show' } )
 			.selectOption( 'past' );
-		await expect( preview ).toContainText( 'Patch Notes Live' );
-		await expect( preview ).not.toContainText( 'Winter Invitational' );
+		await expect( block ).toContainText( 'Patch Notes Live' );
+		await expect( block ).not.toContainText( 'Winter Invitational' );
 
 		await settings.getByRole( 'checkbox', { name: 'Community' } ).check();
-		await expect( preview ).toContainText( 'Map Makers Meetup' );
-		await expect( preview ).not.toContainText( 'Patch Notes Live' );
+		await expect( block ).toContainText( 'Map Makers Meetup' );
+		await expect( block ).not.toContainText( 'Patch Notes Live' );
+
+		await settings
+			.getByRole( 'combobox', { name: 'Opens in' } )
+			.selectOption( 'list' );
+		await expect(
+			editor.canvas
+				.locator( '.wp-block-events-timeline-timeline__list' )
+				.last()
+		).toBeVisible();
 
 		// Dynamic block: it saves as a comment with attributes only, which can never go invalid.
 		await expect
 			.poll( () => editor.getEditedPostContent() )
 			.toBe(
-				'<!-- wp:events-timeline/timeline {"show":"past","eventTypes":["community"]} /-->'
+				'<!-- wp:events-timeline/timeline {"show":"past","defaultView":"list","calendars":["community"]} /-->'
 			);
 	} );
 } );
