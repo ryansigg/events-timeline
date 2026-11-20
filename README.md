@@ -95,7 +95,9 @@ The demo content (`bin/demo-content.php`) creates three calendars and 13 events 
 
 ## Background
 
-The idea comes from an events calendar I designed and built for a game franchise's website in 2023 to 2025, which used a timeline library with rows per game. This is a new, generic implementation written from scratch for WordPress's block and Interactivity APIs, with features the original didn't have, such as linkable filters and server-rendered state.
+This plugin is a 2026 rewrite of an idea I first built in 2023. As a contract developer on a game franchise's website, I designed and built its events calendar: the first commit was in June 2023, the main build ran from June to September 2023, and I kept improving it through 2025 (mobile layouts, full-day events, a timeline/list switch, accessibility fixes). That version used a timeline library, with one row per game and filters by game and event type.
+
+This repository is a new, generic implementation written from scratch in 2026 for WordPress's block and Interactivity APIs. It keeps the ideas that worked (rows per calendar, week, month and year ranges, a list view for phones, a details popover) and adds what the original didn't have, such as filters you can link to and a server-rendered first view that works without JavaScript.
 
 ## License
 
