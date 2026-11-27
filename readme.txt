@@ -4,7 +4,7 @@ Tags: events, timeline, calendar, block, schedule
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,7 +18,7 @@ Add events with a start and end (or whole days), a location and an optional link
 * List view: vertical or horizontal. Phones open in the list.
 * Upcoming events (including ones happening now), past events, or both.
 * Filters by calendar and event type. The view, range and filters are kept in the address bar, so any view can be shared or bookmarked, and it works without JavaScript.
-* Uses your theme's colors and fonts. Supports alignment, color, spacing and font size settings.
+* Uses your theme's colors and fonts by default, or one of the timeline themes: Broadcast, Paper, Neon, or your own from Events > Timeline Themes. Supports alignment, color, spacing and font size settings.
 * Accessible: real lists and headings, `<time>` elements, pressed states on filters, a live count for screen readers, and a keyboard-reachable scroll area.
 
 == Installation ==
@@ -38,6 +38,12 @@ Yes. Add `?event_type=` or `?calendar=` and a slug to the page address, for exam
 The site's time zone, from Settings > General.
 
 == Changelog ==
+
+= 1.2.0 =
+* Timeline themes: Broadcast, Paper and Neon built in, plus your own, saved site-wide.
+* Events > Timeline Themes: edit colors, bar style, glow, density, corners, grid and fonts with a live preview of the real block, contrast warnings, and a site default.
+* A theme picker in the block's Appearance panel. Blocks whose theme is deleted use the site default.
+* Short events near the end of the month no longer overlap their neighbor's label.
 
 = 1.1.0 =
 * Timeline view with one row per calendar, week, month and year ranges, navigation and event details popovers.

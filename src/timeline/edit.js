@@ -12,6 +12,7 @@ import {
 import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import ServerSideRender from '@wordpress/server-side-render';
+import ThemePicker from './theme-picker';
 
 const TAXONOMY = 'evtl_event_type';
 const CALENDARS = 'evtl_calendar';
@@ -92,6 +93,7 @@ export default function Edit( { attributes, setAttributes, name } ) {
 		showLocation,
 		showExcerpt,
 		headingLevel,
+		theme,
 	} = attributes;
 
 	return (
@@ -301,6 +303,15 @@ export default function Edit( { attributes, setAttributes, name } ) {
 						checked={ showExcerpt }
 						onChange={ ( value ) =>
 							setAttributes( { showExcerpt: value } )
+						}
+					/>
+				</PanelBody>
+
+				<PanelBody title={ __( 'Appearance', 'events-timeline' ) }>
+					<ThemePicker
+						value={ theme }
+						onChange={ ( value ) =>
+							setAttributes( { theme: value } )
 						}
 					/>
 				</PanelBody>

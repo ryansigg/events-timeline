@@ -1,0 +1,181 @@
+// Events > Timeline Themes. The page is a grid: the app (theme list and
+// controls) on the left, the live block preview on the right. Narrow screens
+// stack them.
+@use "../shared/themes";
+
+.evtl-themes {
+
+	&__intro {
+		max-width: 48rem;
+	}
+
+	&__layout {
+		display: grid;
+		grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
+		gap: 24px;
+		align-items: start;
+		margin-block-start: 16px;
+
+		@media (max-width: 1279px) {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	&__preview {
+		position: sticky;
+		top: 48px;
+		min-width: 0;
+	}
+
+	&__preview-title {
+		margin: 0 0 8px;
+		font-size: 13px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: #50575e;
+	}
+
+	&__canvas {
+		padding: 24px;
+		// wp-admin text is 13px; show the block at a typical site size.
+		font-size: 16px;
+		border: 1px solid #dcdcde;
+		border-radius: 8px;
+		background: #fff;
+	}
+}
+
+.evtl-theme-editor {
+	display: grid;
+	grid-template-columns: 13rem minmax(0, 1fr);
+	gap: 16px;
+	align-items: start;
+}
+
+.evtl-theme-list {
+	display: grid;
+	gap: 12px;
+
+	ul {
+		display: grid;
+		gap: 4px;
+		margin: 0;
+	}
+
+	li {
+		margin: 0;
+	}
+
+	&__item.components-button {
+		gap: 10px;
+		justify-content: flex-start;
+		width: 100%;
+		height: auto;
+		padding: 6px;
+		border-radius: 4px;
+		text-align: start;
+
+		&[aria-current="true"] {
+			background: #fff;
+			box-shadow: inset 0 0 0 1.5px var(--wp-admin-theme-color, #3858e9);
+		}
+	}
+
+	&__text {
+		display: grid;
+		line-height: 1.3;
+	}
+
+	&__name {
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+
+	&__meta {
+		font-size: 12px;
+		color: #50575e;
+	}
+}
+
+.evtl-theme-form {
+	display: grid;
+	gap: 16px;
+
+	&__builtin {
+
+		h2 {
+			margin: 0 0 4px;
+		}
+
+		p {
+			margin: 0;
+		}
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.components-notice {
+		margin: 0;
+	}
+}
+
+.evtl-token-panel {
+	background: #fff;
+
+	// Controls are rendered without their own bottom margins; space them here.
+	.components-panel__body.is-opened > :not(:first-child) + * {
+		margin-block-start: 20px;
+	}
+}
+
+.evtl-color-fields {
+	display: grid;
+	gap: 4px;
+	margin-block-end: 12px;
+}
+
+.evtl-color-field {
+	display: block;
+
+	&__toggle.components-button {
+		gap: 10px;
+		justify-content: flex-start;
+		width: 100%;
+		height: 40px;
+		border: 1px solid #dcdcde;
+	}
+
+	&__label {
+		flex: 1;
+		text-align: start;
+	}
+
+	&__value {
+		background: none;
+		font-size: 12px;
+	}
+}
+
+.evtl-contrast {
+	margin: 0 0 16px;
+
+	&.is-ok {
+		font-size: 12px;
+		color: #00703c;
+	}
+
+	p {
+		margin: 0 0 4px;
+	}
+}
+
+.evtl-confirm__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+}

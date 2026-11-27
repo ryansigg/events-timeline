@@ -28,8 +28,14 @@ Built with the current block toolchain: `block.json` (API v3), a dynamic block r
 - Saving is locked until an event has a start date, and the panel warns when the end is before the start. The Events list in wp-admin gets a sortable Starts column.
 - Calendars get a color picker on their admin screens. Text on event bars is black or white, whichever has more contrast with the calendar color.
 
+**Themes**
+- By default the block takes its colors and fonts from the site's theme. Three built-in timeline themes change the whole look: **Broadcast** (dark, condensed, uppercase labels), **Paper** (warm serif with soft bars) and **Neon** (outlined pill bars with a glow).
+- **Events > Timeline Themes** is a theme editor: background, text and accent colors, bar style (solid, soft or outline), glow, density, corner radius, grid line strength, a "brighten calendar colors" control for dark themes, body and heading fonts, and uppercase labels. Built-in themes can be saved as your own; your themes can be renamed, duplicated and deleted.
+- The preview is the real block, rendered with your own events and fully interactive, restyled live as you edit. Contrast is checked as you go (4.5:1 for text, 3:1 for the accent).
+- Set a **site default** for every block, and pick a theme per block in its **Appearance** panel. A block whose theme is deleted falls back to the site default.
+
 **Accessibility**
-- Real buttons, lists and headings; `aria-pressed` on every toggle; a polite live region that announces "7 events in November 2026" or "Showing 4 of 13 events"; each bar's dates read out for screen readers; keyboard-reachable scroll areas. Checked with axe (WCAG 2.2 AA) in both views.
+- Real buttons, lists and headings; `aria-pressed` on every toggle; a polite live region that announces "7 events in November 2026" or "Showing 4 of 13 events"; each bar's dates read out for screen readers; keyboard-reachable scroll areas. Checked with axe (WCAG 2.2 AA) in both views, unthemed and in each built-in theme.
 
 | Week | Year |
 | --- | --- |
@@ -45,6 +51,10 @@ Built with the current block toolchain: `block.json` (API v3), a dynamic block r
 
 ![The block in the editor, with its settings](docs/editor-block.png)
 
+![The built-in themes: Broadcast, Paper and Neon](docs/themes.png)
+
+![Events > Timeline Themes: the theme list, the controls, and a live preview of the block](docs/theme-editor.png)
+
 ## How it works
 
 | Piece | Where |
@@ -56,12 +66,17 @@ Built with the current block toolchain: `block.json` (API v3), a dynamic block r
 | The same state and math in the browser, actions and URL sync | [`src/timeline/view.js`](src/timeline/view.js) |
 | Block settings and server-rendered preview | [`src/timeline/edit.js`](src/timeline/edit.js) |
 | Event details panel, All day toggle and save lock | [`src/event-details/index.js`](src/event-details/index.js) |
+| Themes: built-ins, token cleaning, storage, the site default and REST routes | [`includes/themes.php`](includes/themes.php) |
+| Timeline Themes screen and its live preview | [`includes/theme-editor.php`](includes/theme-editor.php), [`src/theme-editor/`](src/theme-editor/) |
+| Theme picker in the block sidebar | [`src/timeline/theme-picker.js`](src/timeline/theme-picker.js) |
 
 **One state, rendered twice.** Every derived value the markup uses (which range is showing, each bar's position and width, the tick labels, the status text) is written twice on purpose: as PHP closures passed to `wp_interactivity_state()` in `includes/timeline.php`, and as getters in `view.js`. WordPress evaluates the PHP versions while rendering, so the HTML the server sends is already laid out, and the browser hydrates it to the same result. That is what makes shared links work without JavaScript.
 
 **Wall-clock time.** Dates are stored as site-local `Y-m-d\TH:i` strings. The timeline converts them to "wall-clock minutes", the local date and time counted as if it were UTC, in both PHP and JavaScript. Positions never shift with the visitor's own time zone, and the two implementations agree to the minute.
 
-**Lanes.** Overlapping events in the same calendar are stacked once, on the server, using whole-day spans plus room for a label, so the stacking is stable in every view.
+**Lanes.** Overlapping events in the same calendar are stacked once, on the server, using whole-day spans plus room for a label, so the stacking is stable in every view. The room goes on whichever side the label will draw: after the bar, or before it for events near the end of the month, whose labels extend to the left.
+
+**Themes are design tokens.** Every value a theme can change (surface and text colors, accent, corner radius, row height, grid strength, fonts) is a CSS custom property in the block's stylesheet, defaulting to the unthemed look. A theme is a small, validated set of tokens; applying one adds a few classes and custom properties to the block's wrapper, both on the server (`evtl_theme_wrapper_parts()`) and in the editor's live preview ([`src/theme-editor/tokens.js`](src/theme-editor/tokens.js)). The end-to-end tests check that the two produce identical values, and the refactor that introduced the tokens was checked pixel for pixel against the unthemed block.
 
 ## Development
 
@@ -90,6 +105,7 @@ The demo content (`bin/demo-content.php`) creates three calendars and 13 events 
 - **Phones and lists:** the phone default, and list-only past events in newest-first order.
 - **Accessibility:** axe in both views.
 - **Editor:** the save lock, field validation, All day storage, and the block's settings and saved markup.
+- **Themes:** each built-in theme on the front end, the site default and opting out, falling back when a theme is deleted, cleaning bad token values, the theme editor (live preview, save, rename, site default, delete, the unsaved-changes prompt, contrast warnings), preview values matching the front end exactly, the block's theme picker, and axe on every built-in theme in both views.
 
 [CI](.github/workflows/ci.yml) lints, builds, sets up the same local site, runs the suite and uploads the installable zip.
 

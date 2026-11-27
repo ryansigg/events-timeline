@@ -1,3 +1,5 @@
+@use "../shared/themes";
+
 // The editor shows a server-rendered preview. Keep its links and filter buttons
 // from navigating or stealing clicks; selecting the block is what matters here.
 .evtl-editor-preview {
@@ -5,5 +7,37 @@
 	a,
 	button {
 		pointer-events: none;
+	}
+}
+
+// Theme picker in the block sidebar.
+.evtl-theme-picker {
+	display: grid;
+	gap: 4px;
+
+	&__choice.components-button {
+		gap: 10px;
+		justify-content: flex-start;
+		height: auto;
+		padding: 6px;
+		text-align: start;
+	}
+
+	&__text {
+		display: grid;
+		line-height: 1.3;
+	}
+
+	&__name {
+		font-weight: 500;
+	}
+
+	&__detail {
+		font-size: 11px;
+		opacity: 0.75;
+	}
+
+	&__manage {
+		margin: 12px 0 0;
 	}
 }

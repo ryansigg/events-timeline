@@ -39,7 +39,7 @@ if ( ! $evtl_events ) {
 	);
 	printf(
 		'<div %1$s><p class="%2$s__empty">%3$s</p></div>',
-		get_block_wrapper_attributes(), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		get_block_wrapper_attributes( evtl_theme_wrapper_attributes( $attributes ) ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		esc_attr( $evtl_base ),
 		esc_html( $evtl_empty[ $evtl_show ] )
 	);
@@ -177,9 +177,11 @@ evtl_register_interactivity_state();
 
 $evtl_json  = static fn( $data ) => wp_json_encode( $data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP );
 $evtl_dates = static fn( $i ) => evtl_format_range( $i['start'], $i['end'], $i['allDay'] );
+$evtl_theme   = evtl_theme_wrapper_attributes( $attributes );
 $evtl_wrapper = get_block_wrapper_attributes(
 	array(
-		'class'                       => "is-layout-{$evtl_layout}",
+		'class'                       => trim( "is-layout-{$evtl_layout} " . ( $evtl_theme['class'] ?? '' ) ),
+		'style'                       => $evtl_theme['style'] ?? '',
 		'data-wp-interactive'         => 'events-timeline',
 		'data-wp-context'             => $evtl_json( $evtl_context ),
 		'data-wp-init'                => 'callbacks.init',
