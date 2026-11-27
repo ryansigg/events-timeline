@@ -178,25 +178,38 @@ function evtl_percent( $fraction ) {
  * spans, and reserves at least five days per event so a short event's title,
  * which can extend past its bar, never runs into the next event in its lane.
  *
+ * The title normally extends to the right. Near the end of the month view
+ * (isNearEnd: starting in the last fifth of the window) it extends to the left
+ * instead, so those events reserve the five days before their end.
+ *
  * @param array $items Items with "c" (calendar), "s" and "e".
  * @return array Same items with "lane" set; plus "lanes" per calendar under the key "_lanes".
  */
 function evtl_assign_lanes( array $items ) {
+	$room = 5 * EVTL_DAY;
+	$used = array();
+	foreach ( $items as $i => $item ) {
+		list( $s, $e ) = evtl_span( $item['s'], $item['e'], 'month' );
+		$month_start   = (int) ( gmmktime( 0, 0, 0, (int) gmdate( 'n', $s * 60 ), 1, (int) gmdate( 'Y', $s * 60 ) ) / 60 );
+		$month_end     = (int) ( gmmktime( 0, 0, 0, (int) gmdate( 'n', $s * 60 ) + 1, 1, (int) gmdate( 'Y', $s * 60 ) ) / 60 );
+		$near_end      = ( $s - $month_start ) / ( $month_end - $month_start ) > 0.8;
+		$used[ $i ]    = $near_end ? array( min( $s, $e - $room ), $e ) : array( $s, max( $e, $s + $room ) );
+	}
+
 	$lane_ends = array();
 	$order     = array_keys( $items );
-	usort( $order, static fn( $a, $b ) => $items[ $a ]['s'] <=> $items[ $b ]['s'] );
+	usort( $order, static fn( $a, $b ) => $used[ $a ][0] <=> $used[ $b ][0] );
 	foreach ( $order as $i ) {
-		list( $s, $e ) = evtl_span( $items[ $i ]['s'], $items[ $i ]['e'], 'month' );
-		$e             = max( $e, $s + 5 * EVTL_DAY );
-		$cal           = $items[ $i ]['c'];
-		$lanes         = $lane_ends[ $cal ] ?? array();
-		$lane          = 0;
-		while ( isset( $lanes[ $lane ] ) && $lanes[ $lane ] > $s ) {
+		list( $from, $to ) = $used[ $i ];
+		$cal               = $items[ $i ]['c'];
+		$lanes             = $lane_ends[ $cal ] ?? array();
+		$lane              = 0;
+		while ( isset( $lanes[ $lane ] ) && $lanes[ $lane ] > $from ) {
 			++$lane;
 		}
-		$lanes[ $lane ]       = $e;
-		$lane_ends[ $cal ]    = $lanes;
-		$items[ $i ]['lane']  = $lane;
+		$lanes[ $lane ]      = $to;
+		$lane_ends[ $cal ]   = $lanes;
+		$items[ $i ]['lane'] = $lane;
 	}
 	$counts = array();
 	foreach ( $lane_ends as $cal => $lanes ) {
